@@ -4,12 +4,17 @@ version = "0.1.0"
 description = ""
 authors = ["lifehackett"]
 readme = "README.md"
-packages = [{include = "wordle", from = "src"}]
+# packages = [{include = "wordle", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+click = "^8.1.3"
+pytest = "^7.2.0"
 
+[tool.poetry.scripts]
+wordle = "src.wordle.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
