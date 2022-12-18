@@ -20,9 +20,7 @@ def validate_guess(ctx, param, value):
 @click.command()
 @click.argument("guess", callback=validate_guess)
 def guess(guess: str):
-
     upper_guess = guess.upper()
-
     click.echo(f"guess: {upper_guess}")
 
 
