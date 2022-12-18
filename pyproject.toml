@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "wordle"
+version = "0.1.0"
+description = ""
+authors = ["lifehackett"]
+readme = "README.md"
+packages = [{include = "wordle", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
