@@ -40,6 +40,7 @@ def guess(guess: str):
         else:
             output.append(result.letter)
 
+    click.echo(f"Guess {wordle.todays_guess_count} of {Wordle.MAX_GUESSES}")
     click.echo("".join(output))
     if wordle.is_last_guess:
         click.echo(f"Today's word is: {wordle.todays_word}")

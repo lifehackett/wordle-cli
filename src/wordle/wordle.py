@@ -2,8 +2,11 @@ from dataclasses import dataclass
 import os
 import yaml
 from enum import Enum
+from typing import TypeVar
 
 from datetime import timezone, datetime
+
+Self = TypeVar("Self", bound="Wordle")
 
 
 class Score(Enum):
@@ -26,6 +29,7 @@ class Wordle(yaml.YAMLObject):
     # TODO error handling or default
     # TODO should this be parameterized
     datastore_path = os.getenv("DATASTORE_PATH")
+    MAX_GUESSES = 6
 
     def __init__(self, guesses: Guesses, word_list: list, word_list_index: int):
         # TODO handle defaults/omissions/bad values
@@ -57,9 +61,18 @@ class Wordle(yaml.YAMLObject):
         # TODO handle out of range
         return self.word_list[self.word_list_index]
 
+    @property
+    def is_last_guess(self) -> bool:
+        # TODO think about whether the check below in guess is the same or just different enough to be kept separate
+        return self.todays_guess_count >= Wordle.MAX_GUESSES
+
+    @property
+    def todays_guess_count(self) -> int:
+        return len(self.guesses[self._today])
+
     # TODO return type
     @classmethod
-    def load(cls):
+    def load(cls) -> Self:
         with open(cls.datastore_path, "r") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
@@ -67,14 +80,10 @@ class Wordle(yaml.YAMLObject):
         with open(Wordle.datastore_path, "w") as f:
             yaml.dump(self, f, Dumper=yaml.Dumper, indent=2)
 
-    def is_last_guess(self) -> bool:
-        # TODO think about whether the check below in guess is the same or just different enough to be kept separate
-        return len(self.guesses[self._today]) >= 6
-
     def guess(self, guess: str) -> list[LetterScore]:
         upper_guess = guess.upper()
 
-        if len(self.guesses[self._today]) >= 6:
+        if self.todays_guess_count >= Wordle.MAX_GUESSES:
             raise ValueError("You've used all 6 of your guesses, try again tomorrow!")
 
         # e.g APPLE => {'a': 1, 'p': 2, 'l': 1, 'e': 1}

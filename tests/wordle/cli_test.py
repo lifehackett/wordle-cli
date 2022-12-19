@@ -26,6 +26,14 @@ class TestGuess:
         result = runner.invoke(guess, "BAKER")
         assert result.exit_code == 0
 
+    def test_displays_guess_count(self):
+        runner = CliRunner()
+        result = runner.invoke(guess, "abcde")
+        assert "1 of 6" in result.output
+
+        result = runner.invoke(guess, "abcde")
+        assert "2 of 6" in result.output
+
     def test_reveals_word_if_last_guess(self):
         runner = CliRunner()
 
