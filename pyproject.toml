@@ -23,5 +23,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 env = [
-    "DATASTORE_PATH=./tests/wordle/datastore.yaml"
+    "RESULTS_PATH=./tests/wordle/results.yaml"
 ]

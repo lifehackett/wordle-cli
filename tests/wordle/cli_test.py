@@ -1,28 +1,20 @@
-import os
-import yaml
-
 import pytest
 from click.testing import CliRunner
 
 from wordle.cli import guess
-from wordle.wordle import Wordle
-
-SEED_DATA = {
-    "guesses": {},
-    "word_list": ["APPLE", "BAKER", "CATCH", "BINGO"],
-    "word_list_index": 0,
-}
+from wordle.wordle import Wordle, WordleResults
 
 
 class TestGuess:
     @pytest.fixture(autouse=True)
     def before_each(self):
-        wordle = Wordle(**SEED_DATA)
+        wordle = WordleResults({})
         wordle.save()
 
     def test_success(self):
         runner = CliRunner()
         # TODO make it more explicit. This is BAKER instead of APPLE because the index gets incremented
+        # TODO incomplete, doesn't actually test success
         result = runner.invoke(guess, "BAKER")
         assert result.exit_code == 0
 
@@ -36,16 +28,17 @@ class TestGuess:
 
     def test_reveals_word_if_last_guess(self):
         runner = CliRunner()
+        wordle = Wordle()
 
         for i in range(5):
             result = runner.invoke(guess, "abcde")
             assert result.exit_code == 0
             # TODO make it more explicit. This is BAKER instead of APPLE because the index gets incremented
-            assert "Todays word is: BAKER" not in result.output
+            assert f"Todays word is: {wordle.todays_word}" not in result.output
 
         result = runner.invoke(guess, "abcde")
         assert result.exit_code == 0
-        assert "Today's word is: BAKER" in result.output
+        assert f"Today's word is: {wordle.todays_word}" in result.output
 
     def test_rejects_empty_input(self):
         runner = CliRunner()

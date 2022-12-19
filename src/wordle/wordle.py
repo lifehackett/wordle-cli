@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 import os
 import yaml
 from enum import Enum
@@ -6,7 +7,7 @@ from typing import TypeVar
 
 from datetime import timezone, datetime
 
-Self = TypeVar("Self", bound="Wordle")
+Self = TypeVar("Self", bound="WordleResults")
 
 
 class Score(Enum):
@@ -15,7 +16,10 @@ class Score(Enum):
     EXACT = 2
 
 
-Guesses = dict[str, list[str]]
+@dataclass
+class Result:
+    answer: str
+    guesses: list[str]
 
 
 @dataclass
@@ -24,36 +28,64 @@ class LetterScore:
     score: Score
 
 
-class Wordle(yaml.YAMLObject):
-    yaml_tag = "!Wordle"
-    # TODO error handling or default
+class WordleResults(yaml.YAMLObject):
     # TODO should this be parameterized
-    datastore_path = os.getenv("DATASTORE_PATH")
-    MAX_GUESSES = 6
+    results_path = os.getenv("RESULTS_PATH")
+    yaml_tag = "!WordleResults"
 
-    def __init__(self, guesses: Guesses, word_list: list, word_list_index: int):
-        # TODO handle defaults/omissions/bad values
-        self.guesses = guesses
-        self.guesses.setdefault(self._today, [])
-
-        self.word_list = word_list
-        self.word_list_index = word_list_index
-
-        if len(self.guesses[self._today]) == 0:
-            # TODO won't be in sync distributed
-            # first guess, increment index
-            self.word_list_index += 1
+    def __init__(self, results: dict[str, Result]):
+        self.results = results
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(guesses={self.guesses}, word_list={self.word_list}, word_list_index={self.word_list_index}"
+        return f"{self.__class__.__name__}(results={self.results})"
 
-    # TODO rethink, making this private
-    # @property
-    # def word_list(self):
-    #     return self._word_list
+    @classmethod
+    def load(cls) -> Self:
+        with open(cls.results_path, "r") as f:
+            return yaml.load(f, Loader=yaml.Loader)
+
+    def save(self):
+        with open(WordleResults.results_path, "w") as f:
+            yaml.dump(self, f, Dumper=yaml.Dumper, indent=2)
+
+    def create_result(self, date_key: str, answer: str):
+        self.results.setdefault(date_key, Result(answer, []))
+
+    def get_result(self, date_key: str) -> Result:
+        return self.results.get(date_key)
+
+    def add_guess(self, date_key, guess):
+        if date_key not in self.results:
+            raise IndexError(
+                f"No result found for date_key: {date_key}. Call create_result first."
+            )
+        self.results[date_key].guesses.append(guess)
+
+
+class Wordle:
+    # TODO error handling or default
+    MAX_GUESSES = 6
+
+    def __init__(self):
+        # TODO handle defaults/omissions/bad values
+        self.results = WordleResults.load()
+        # TODO hardcoded
+        self.word_list_index = 1
+        # TODO is this too reliant on implementation detail of create_result using setdefault
+        self.results.create_result(self.todays_key, self.todays_word)
+
+        # if len(self._results.guesses[self._today]) == 0:
+        #     # TODO won't be in sync distributed
+        #     # first guess, increment index
+        #     self.word_list_index += 1
+
+    @cached_property
+    def word_list(self) -> list[str]:
+        with open("data/answer_words.txt") as f:
+            return [x.strip() for x in f]
 
     @property
-    def _today(self) -> str:
+    def todays_key(self) -> str:
         return datetime.now(timezone.utc).strftime("%Y/%m/%d")
 
     @property
@@ -68,17 +100,7 @@ class Wordle(yaml.YAMLObject):
 
     @property
     def todays_guess_count(self) -> int:
-        return len(self.guesses[self._today])
-
-    # TODO return type
-    @classmethod
-    def load(cls) -> Self:
-        with open(cls.datastore_path, "r") as f:
-            return yaml.load(f, Loader=yaml.Loader)
-
-    def save(self):
-        with open(Wordle.datastore_path, "w") as f:
-            yaml.dump(self, f, Dumper=yaml.Dumper, indent=2)
+        return len(self.results.get_result(self.todays_key).guesses)
 
     def guess(self, guess: str) -> list[LetterScore]:
         upper_guess = guess.upper()
@@ -108,6 +130,6 @@ class Wordle(yaml.YAMLObject):
                 score = Score.MISS
             scorecard.append(LetterScore(letter, score))
 
-        self.guesses[self._today].append(upper_guess)
-        self.save()
+        self.results.add_guess(self.todays_key, upper_guess)
+        self.results.save()
         return scorecard

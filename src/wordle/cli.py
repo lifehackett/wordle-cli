@@ -23,7 +23,7 @@ def validate_guess(ctx, param, value):
 @click.command()
 @click.argument("guess", callback=validate_guess)
 def guess(guess: str):
-    wordle = Wordle.load()
+    wordle = Wordle()
 
     scorecard = []
     try:

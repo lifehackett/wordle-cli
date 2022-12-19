@@ -1,0 +1,11 @@
+!WordleResults
+results:
+  2022/12/19: !!python/object:wordle.wordle.Result
+    answer: rebut
+    guesses:
+    - ABCDE
+    - ABCDE
+    - ABCDE
+    - ABCDE
+    - ABCDE
+    - ABCDE
