@@ -1,3 +1,4 @@
+from functools import reduce
 import re
 from datetime import timezone, datetime
 from enum import Enum
@@ -26,8 +27,8 @@ def validate_guess(ctx, param, value):
 
 class Score(Enum):
     MISS = 0
-    YELLOW = 1
-    GREEN = 2
+    PARTIAL = 1
+    EXACT = 2
 
 
 def add_guess(guess: str):
@@ -49,14 +50,23 @@ def add_guess(guess: str):
     # TODO handle out of range
     todays_word = list(words[word_list_index])
 
+    todays_word_letter_count = {}
+    for letter in todays_word:
+        todays_word_letter_count[letter] = (
+            todays_word_letter_count[letter] + 1
+            if letter in todays_word_letter_count
+            else 1
+        )
+
     scorecard = []
     score = Score.MISS
     for i, letter in enumerate(list(guess)):
         if todays_word[i] == letter:
-            score = Score.GREEN
-        # TODO Multiple of same letter handling
-        elif letter in todays_word:
-            score = Score.YELLOW
+            score = Score.EXACT
+            todays_word_letter_count[letter] = todays_word_letter_count[letter] - 1
+        elif letter in todays_word and todays_word_letter_count[letter] > 0:
+            score = Score.PARTIAL
+            todays_word_letter_count[letter] = todays_word_letter_count[letter] - 1
         else:
             score = Score.MISS
         scorecard.append({"letter": letter, "score": score})
@@ -65,13 +75,13 @@ def add_guess(guess: str):
     repository.save("guesses", guesses)
 
     output = []
-    for score in scorecard:
-        if score["score"] == Score.GREEN:
-            output.append(click.style(score["letter"], bg="green"))
-        elif score["score"] == Score.YELLOW:
-            output.append(click.style(score["letter"], bg="yellow"))
+    for result in scorecard:
+        if result["score"] == Score.EXACT:
+            output.append(click.style(result["letter"], bg="green"))
+        elif result["score"] == Score.PARTIAL:
+            output.append(click.style(result["letter"], bg="yellow"))
         else:
-            output.append(score["letter"])
+            output.append(result["letter"])
 
     click.echo("".join(output))
     # TODO if last guess output word
