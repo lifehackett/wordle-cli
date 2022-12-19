@@ -34,11 +34,11 @@ class TestGuess:
             result = runner.invoke(guess, "abcde")
             assert result.exit_code == 0
             # TODO make it more explicit. This is BAKER instead of APPLE because the index gets incremented
-            assert f"Todays word is: {wordle.todays_word}" not in result.output
+            assert f"Todays word is: {wordle.todays_answer}" not in result.output
 
         result = runner.invoke(guess, "abcde")
         assert result.exit_code == 0
-        assert f"Today's word is: {wordle.todays_word}" in result.output
+        assert f"Today's word is: {wordle.todays_answer}" in result.output
 
     def test_rejects_empty_input(self):
         runner = CliRunner()

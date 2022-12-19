@@ -1,5 +1,3 @@
-import re
-
 import click
 
 from wordle.wordle import Wordle, Score
@@ -10,12 +8,12 @@ def cli():
     pass
 
 
-# TODO move validation logic to Wordle...maybe
 def validate_guess(ctx, param, value):
-    if len(value) != 5:
-        raise click.BadParameter("must be 5 characters")
-    if re.match("^[a-zA-Z]{5}$", value) is None:
-        raise click.BadParameter("must only contain letters")
+    wordle = Wordle()
+    try:
+        wordle.validate_guess(value)
+    except ValueError as e:
+        raise click.BadArgumentUsage(str(e))
 
     return value
 
@@ -42,9 +40,8 @@ def guess(guess: str):
 
     click.echo(f"Guess {wordle.todays_guess_count} of {Wordle.MAX_GUESSES}")
     click.echo("".join(output))
-    # TODO check they didn't get it right
-    if wordle.is_last_guess:
-        click.echo(f"You ran out of guesses. Today's word is: {wordle.todays_word}")
+    if not wordle.has_more_guesses and not wordle.guessed_todays_answer:
+        click.echo(f"You ran out of guesses. Today's word is: {wordle.todays_answer}")
 
 
 cli.add_command(guess)

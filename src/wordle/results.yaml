@@ -1,11 +1,6 @@
 !WordleResults
 results:
-  2022/12/19: !!python/object:wordle.wordle.Result
-    answer: rebut
+  2022/12/19: !!python/object:wordle.wordle_results.Result
+    answer: REBUT
     guesses:
-    - AEEXA
-    - AEEXA
-    - AEEXA
-    - AEEXA
-    - AEEXA
-    - AEEXA
+    - REBUA
