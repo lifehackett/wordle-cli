@@ -5,8 +5,10 @@ import pytest
 from click.testing import CliRunner
 
 from wordle.cli import guess
+from wordle.wordle import Wordle
 
 SEED_DATA = {
+    "guesses": {},
     "word_list": ["APPLE", "BAKER", "CATCH", "BINGO"],
     "word_list_index": 0,
 }
@@ -15,19 +17,27 @@ SEED_DATA = {
 class TestGuess:
     @pytest.fixture(autouse=True)
     def before_each(self):
-        try:
-            datastore_path = os.getenv("DATASTORE_PATH")
-            with open(datastore_path, "w") as f:
-                yaml.dump(SEED_DATA, f, Dumper=yaml.Dumper, indent=2)
-                pass
-        except FileNotFoundError:
-            pass
+        wordle = Wordle(**SEED_DATA)
+        wordle.save()
 
     def test_success(self):
         runner = CliRunner()
         # TODO make it more explicit. This is BAKER instead of APPLE because the index gets incremented
         result = runner.invoke(guess, "BAKER")
         assert result.exit_code == 0
+
+    def test_reveals_word_if_last_guess(self):
+        runner = CliRunner()
+
+        for i in range(5):
+            result = runner.invoke(guess, "abcde")
+            assert result.exit_code == 0
+            # TODO make it more explicit. This is BAKER instead of APPLE because the index gets incremented
+            assert "Todays word is: BAKER" not in result.output
+
+        result = runner.invoke(guess, "abcde")
+        assert result.exit_code == 0
+        assert "Today's word is: BAKER" in result.output
 
     def test_rejects_empty_input(self):
         runner = CliRunner()
@@ -62,4 +72,4 @@ class TestGuess:
 
         result = runner.invoke(guess, "abcde")
         assert result.exit_code == 2
-        assert "all 6 of your guesses"
+        assert "all 6 of your guesses" in result.output
