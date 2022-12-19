@@ -108,6 +108,24 @@ pluggy = ">=0.12,<2.0"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-env"
+version = "0.8.1"
+description = "py.test plugin that allows you to add environment variables."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_env-0.8.1-py3-none-any.whl", hash = "sha256:8c0605ae09a5b7e41c20ebcc44f2c906eea9654095b4b0c342b3814bcc3a8492"},
+    {file = "pytest_env-0.8.1.tar.gz", hash = "sha256:d7b2f5273ec6d1e221757998bc2f50d2474ed7d0b9331b92556011fadc4e9abf"},
+]
+
+[package.dependencies]
+pytest = ">=7.1.3"
+
+[package.extras]
+test = ["coverage (>=6.5)", "pytest-mock (>=3.10)"]
+
+[[package]]
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
@@ -160,4 +178,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c6c8b02158121eede0832928d434fb4b485eecd0b4ba2bed95a41b29079a97ae"
+content-hash = "48e91f64ef860014258d78936ce93a4cc8e363ccf4590a4d56519ee48c9e051b"
