@@ -5,7 +5,7 @@ import yaml
 from enum import Enum
 from typing import TypeVar
 
-from datetime import timezone, datetime
+from datetime import timezone, datetime, date
 
 Self = TypeVar("Self", bound="WordleResults")
 
@@ -30,6 +30,7 @@ class LetterScore:
 
 class WordleResults(yaml.YAMLObject):
     # TODO should this be parameterized
+    # TODO error handling or default
     results_path = os.getenv("RESULTS_PATH")
     yaml_tag = "!WordleResults"
 
@@ -63,21 +64,16 @@ class WordleResults(yaml.YAMLObject):
 
 
 class Wordle:
-    # TODO error handling or default
     MAX_GUESSES = 6
 
     def __init__(self):
         # TODO handle defaults/omissions/bad values
         self.results = WordleResults.load()
-        # TODO hardcoded
-        self.word_list_index = 1
+        day_zero = date(2022, 12, 18)
+        today = date.today()
+        self.word_list_index = (today - day_zero).days
         # TODO is this too reliant on implementation detail of create_result using setdefault
         self.results.create_result(self.todays_key, self.todays_word)
-
-        # if len(self._results.guesses[self._today]) == 0:
-        #     # TODO won't be in sync distributed
-        #     # first guess, increment index
-        #     self.word_list_index += 1
 
     @cached_property
     def word_list(self) -> list[str]:

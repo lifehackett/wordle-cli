@@ -42,8 +42,9 @@ def guess(guess: str):
 
     click.echo(f"Guess {wordle.todays_guess_count} of {Wordle.MAX_GUESSES}")
     click.echo("".join(output))
+    # TODO check they didn't get it right
     if wordle.is_last_guess:
-        click.echo(f"Today's word is: {wordle.todays_word}")
+        click.echo(f"You ran out of guesses. Today's word is: {wordle.todays_word}")
 
 
 cli.add_command(guess)
