@@ -4,3 +4,9 @@ results:
     answer: REBUT
     guesses:
     - REBUA
+  2022/12/20: !!python/object:wordle.wordle_results.Result
+    answer: SISSY
+    guesses:
+    - ARISE
+    - MOIST
+    - SISSY
