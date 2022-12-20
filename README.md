@@ -21,6 +21,9 @@ This is where the business logic lives. It encapsulates the rules of the game.
 ## wordle_results.py
 This is the persistence layer of the application
 
+## Testing
+`poetry run pytest` - run the tests
+
 # Feature Enhancements
 - Add support for metrics
 - Add support for advanced mode
