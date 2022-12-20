@@ -21,6 +21,12 @@ def validate_guess(ctx, param, value):
 @click.command()
 @click.argument("guess", callback=validate_guess)
 def guess(guess: str):
+    """Guess the word of the day. All words are 5 letters long. You get 6 attempts.
+
+    \b
+    GUESS   is the word you think is the word of the day.
+            must be exactly 5 letters long
+    """
     wordle = Wordle()
 
     scorecard = []
