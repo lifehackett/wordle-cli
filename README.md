@@ -1,3 +1,6 @@
+# Running
+poetry
+
 # Contributing
 direnv
 
