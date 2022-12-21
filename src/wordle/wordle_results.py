@@ -42,9 +42,9 @@ class WordleResultsYAMLMarshaller:
                 return WordleResults(results)
 
         except FileNotFoundError as e:
-            raise FileNotFoundError(
-                "Results file not found. Provide a valid envvar RESULTS_PATH"
-            )
+            with open(file_path, "x"):
+                pass
+            return WordleResultsYAMLMarshaller.load(file_path)
 
     @classmethod
     def dump(self, file_path: str, results: WordleResults):

@@ -6,7 +6,7 @@ from typing import Tuple, Optional
 
 from datetime import timezone, datetime, date
 
-from wordle.wordle_results import WordleResults
+from wordle.wordle_results import Result, WordleResults
 
 
 class Score(Enum):
@@ -44,8 +44,6 @@ class Wordle:
         self.results = results
         today = date.today()
         self.answer_list_index = (today - Wordle.DAY_ZERO).days
-        if not self.results.get_result(self.todays_key):
-            self.results.create_result(self.todays_key, self.todays_answer)
 
     @cached_property
     def answer_list(self) -> list[str]:
@@ -97,7 +95,8 @@ class Wordle:
         Returns:
             list[str]: today's guesses
         """
-        return self.results.get_result(self.todays_key).guesses
+        result = self.results.get_result(self.todays_key)
+        return result.guesses if result else []
 
     @property
     def todays_guess_count(self) -> int:
@@ -156,6 +155,9 @@ class Wordle:
         Returns:
             list[LetterScore]: The guess, tokenized by letter with each letter assigned a score
         """
+        if not self.results.get_result(self.todays_key):
+            self.results.create_result(self.todays_key, self.todays_answer)
+
         self.validate_guess(guess)
 
         upper_guess = guess.upper()
@@ -195,19 +197,24 @@ class Wordle:
         guess_dist = [0, 0, 0, 0, 0, 0]
         win_count = 0
         loss_count = 0
-        for key in self.results.results:
-            result = self.results.results[key]
+        for key, result in self.results.results.items():
             num_guesses = len(result.guesses)
+
             last_guess = num_guesses - 1
             is_win = result.answer == result.guesses[last_guess]
-            if num_guesses == Wordle.MAX_GUESSES:
+            if num_guesses == 0:
+                loss_count += 1
+            elif num_guesses == Wordle.MAX_GUESSES:
                 if is_win:
                     win_count += 1
                     guess_dist[last_guess] = guess_dist[last_guess] + 1
                 else:
-                    loss_count += loss_count + 1
+                    loss_count += 1
             else:
-                win_count += 1
-                guess_dist[last_guess] = guess_dist[last_guess] + 1
+                if is_win:
+                    win_count += 1
+                    guess_dist[last_guess] = guess_dist[last_guess] + 1
+                else:
+                    loss_count += 1
 
         return Metrics(guess_dist, win_count, loss_count)

@@ -3,3 +3,5 @@ TODO.md
 __pycache__
 .envrc
 dist/
+data/results.yaml
+

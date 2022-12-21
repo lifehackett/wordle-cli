@@ -11,7 +11,7 @@ def cli():
     pass
 
 
-RESULTS_PATH = './src/wordle/data/results.yaml'
+RESULTS_PATH = './data/results.yaml'
 
 
 def validate_guess(ctx, param, value):

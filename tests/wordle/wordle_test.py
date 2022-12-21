@@ -1,6 +1,7 @@
 import pytest
 
 from wordle.wordle import Score, Wordle, WordleResults
+from wordle.wordle_results import Result
 
 
 class TestGuess:
@@ -50,3 +51,20 @@ class TestGuess:
         assert scorecard[2].score == Score.MISS
         assert scorecard[3].score == Score.MISS
         assert scorecard[4].score == Score.MISS
+
+
+class TestMetrics:
+    def test_metrics(self):
+        results = WordleResults({
+            "2022-12-19": Result(answer="APPLE", guesses=["APPLE"]),
+            "2022-12-20": Result(answer="APPLE", guesses=["HUNCH", "REBUT", "FOCAL", "CRUST", "CRAZY", "APPLE"]),
+            "2022-12-21": Result(answer="APPLE", guesses=["HUNCH", "APPLE"]),
+            "2022-12-22": Result(answer="APPLE", guesses=["HUNCH", "APPLE"]),
+            "2022-12-23": Result(answer="APPLE", guesses=["HUNCH", "REBUT", "FOCAL", "CRUST", "CRAZY", "CLICK"]),
+            "2022-12-24": Result(answer="APPLE", guesses=["HUNCH", "REBUT"]),
+        })
+        wordle = Wordle(results)
+        metrics = wordle.metrics()
+        assert metrics.win_count == 4
+        assert metrics.loss_count == 2
+        assert metrics.guess_dist == [1, 2, 0, 0, 0, 1]
