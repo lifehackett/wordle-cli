@@ -8,5 +8,34 @@ results:
     answer: SISSY
     guesses:
     - ARISE
-    - MOIST
+    - APPLE
     - SISSY
+  2022/12/21: !!python/object:wordle.wordle_results.Result
+    answer: HUMPH
+    guesses:
+    - REBUA
+    - LATER
+  2022/12/22: !!python/object:wordle.wordle_results.Result
+    answer: AWAKE
+    guesses:
+    - REBUA
+    - LATER
+    - PLATE
+    - PLATO
+    - ARISE
+    - APPLE
+  2022/12/23: !!python/object:wordle.wordle_results.Result
+    answer: APPLE
+    guesses:
+    - REBUA
+    - LATER
+    - PLATE
+    - PLATO
+    - ARISE
+    - APPLE
+  2022/12/24: !!python/object:wordle.wordle_results.Result
+    answer: CRAFT
+    guesses:
+    - ARISE
+    - APPLE
+    - CRAFT

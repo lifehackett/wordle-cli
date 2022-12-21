@@ -19,6 +19,20 @@ class LetterScore:
     letter: str
     score: Score
 
+@dataclass
+class Metrics:
+    guess_dist: list[int]
+    win_count: int
+    loss_count: int
+
+    @property
+    def games_played(self):
+        return self.win_count + self.loss_count
+    
+    @property
+    def win_rate(self):
+        return self.win_count / self.games_played
+
 
 class Wordle:
     MAX_GUESSES = 6
@@ -120,9 +134,11 @@ class Wordle:
         if re.match("^[a-zA-Z]{5}$", guess) is None:
             raise ValueError("must only contain letters")
         if self.todays_guess_count >= Wordle.MAX_GUESSES:
-            raise ValueError("You've used all 6 of your guesses, try again tomorrow!")
+            raise ValueError(
+                "You've used all 6 of your guesses, try again tomorrow!")
         if self.guessed_todays_answer:
-            raise ValueError(f"You already guessed today's word! {self.todays_answer}")
+            raise ValueError(
+                f"You already guessed today's word! {self.todays_answer}")
 
     def guess(self, guess: str) -> list[LetterScore]:
         """Takes a guess and checks to see whether it matches the answer
@@ -173,3 +189,24 @@ class Wordle:
         self.results.add_guess(self.todays_key, upper_guess)
         self.results.save()
         return scorecard
+
+    def metrics(self) -> Metrics:
+        guess_dist = [0,0,0,0,0,0]
+        win_count = 0
+        loss_count = 0
+        for key in self.results.results:
+            result = self.results.results[key]
+            num_guesses = len(result.guesses)
+            last_guess = num_guesses - 1
+            is_win = result.answer == result.guesses[last_guess]
+            if num_guesses == Wordle.MAX_GUESSES:
+                if is_win:
+                    win_count += 1
+                    guess_dist[last_guess] = guess_dist[last_guess] + 1
+                else:
+                    loss_count += loss_count + 1
+            else:
+                win_count += 1
+                guess_dist[last_guess] = guess_dist[last_guess] + 1
+                
+        return Metrics(guess_dist, win_count, loss_count)

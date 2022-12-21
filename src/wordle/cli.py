@@ -49,5 +49,27 @@ def guess(guess: str):
     if not wordle.has_more_guesses and not wordle.guessed_todays_answer:
         click.echo(f"You ran out of guesses. Today's word is: {wordle.todays_answer}")
 
+@click.command()
+def metrics():
+    """Print out your Wordle metrics
+    """
+    
+    wordle = Wordle()
+    metrics = wordle.metrics()
+    click.echo(f"Played: {metrics.games_played}")
+    click.echo(f"Win Rate: " + "{:.0%}".format(metrics.win_rate))
+    click.echo(f"Guess Distribution")
+
+    def print_guess_dist(count):
+        return ''.join(['+' for i in range(count)])
+
+    click.echo(f"1: {print_guess_dist(metrics.guess_dist[0])}")
+    click.echo(f"2: {print_guess_dist(metrics.guess_dist[1])}")
+    click.echo(f"3: {print_guess_dist(metrics.guess_dist[2])}")
+    click.echo(f"4: {print_guess_dist(metrics.guess_dist[3])}")
+    click.echo(f"5: {print_guess_dist(metrics.guess_dist[4])}")
+    click.echo(f"6: {print_guess_dist(metrics.guess_dist[5])}")
+
 
 cli.add_command(guess)
+cli.add_command(metrics)
