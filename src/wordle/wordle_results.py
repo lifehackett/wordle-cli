@@ -13,34 +13,9 @@ class Result:
     guesses: list[str]
 
 
-class WordleResults(yaml.YAMLObject):
-    results_path = os.getenv("RESULTS_PATH", "")
-    yaml_tag = "!WordleResults"
-
+class WordleResults():
     def __init__(self, results: dict[str, Result]):
         self.results = results
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(results={self.results})"
-
-    @classmethod
-    def load(cls) -> Self:
-        try:
-            with open(cls.results_path, "r") as f:
-                return yaml.load(f, Loader=yaml.Loader)
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                "Results file not found. Provide a valid envvar RESULTS_PATH"
-            )
-
-    def save(self):
-        try:
-            with open(WordleResults.results_path, "w") as f:
-                yaml.dump(self, f, Dumper=yaml.Dumper, indent=2)
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                "Results file not found. Provide a valid envvar RESULTS_PATH"
-            )
 
     def create_result(self, date_key: str, answer: str):
         self.results.setdefault(date_key, Result(answer, []))
@@ -54,3 +29,35 @@ class WordleResults(yaml.YAMLObject):
                 f"No result found for date_key: {date_key}. Call create_result first."
             )
         self.results[date_key].guesses.append(guess)
+
+
+class WordleResultsYAMLMarshaller:
+    @classmethod
+    def load(self, file_path: str) -> WordleResults:
+        try:
+            with open(file_path, "r") as f:
+                results = yaml.load(f, Loader=yaml.Loader) or {}
+                results = {key: Result(
+                    answer=value["answer"], guesses=value["guesses"]) for key, value in results.items()}
+                return WordleResults(results)
+
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                "Results file not found. Provide a valid envvar RESULTS_PATH"
+            )
+
+    @classmethod
+    def dump(self, file_path: str, results: WordleResults):
+        try:
+            with open(file_path, "w") as f:
+                out_results = {}
+                for key, value in results.results.items():
+                    out_results[key] = {
+                        "answer": value.answer,
+                        "guesses": value.guesses
+                    }
+                yaml.dump(out_results, f, Dumper=yaml.Dumper, indent=2)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                "Results file not found. Provide a valid envvar RESULTS_PATH"
+            )

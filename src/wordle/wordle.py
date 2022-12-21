@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from enum import Enum
 import re
+from typing import Tuple, Optional
 
 from datetime import timezone, datetime, date
 
@@ -19,6 +20,7 @@ class LetterScore:
     letter: str
     score: Score
 
+
 @dataclass
 class Metrics:
     guess_dist: list[int]
@@ -28,7 +30,7 @@ class Metrics:
     @property
     def games_played(self):
         return self.win_count + self.loss_count
-    
+
     @property
     def win_rate(self):
         return self.win_count / self.games_played
@@ -36,12 +38,12 @@ class Metrics:
 
 class Wordle:
     MAX_GUESSES = 6
+    DAY_ZERO = date(2022, 12, 18)
 
-    def __init__(self):
-        self.results = WordleResults.load()
-        day_zero = date(2022, 12, 18)
+    def __init__(self, results: Optional[WordleResults] = WordleResults({})):
+        self.results = results
         today = date.today()
-        self.answer_list_index = (today - day_zero).days
+        self.answer_list_index = (today - Wordle.DAY_ZERO).days
         if not self.results.get_result(self.todays_key):
             self.results.create_result(self.todays_key, self.todays_answer)
 
@@ -140,7 +142,7 @@ class Wordle:
             raise ValueError(
                 f"You already guessed today's word! {self.todays_answer}")
 
-    def guess(self, guess: str) -> list[LetterScore]:
+    def guess(self, guess: str) -> Tuple[WordleResults, list[LetterScore]]:
         """Takes a guess and checks to see whether it matches the answer
 
         The guess will be tokenized and each letter will receive a score of:
@@ -187,11 +189,10 @@ class Wordle:
             scorecard.append(LetterScore(letter, score))
 
         self.results.add_guess(self.todays_key, upper_guess)
-        self.results.save()
-        return scorecard
+        return (self.results, scorecard)
 
     def metrics(self) -> Metrics:
-        guess_dist = [0,0,0,0,0,0]
+        guess_dist = [0, 0, 0, 0, 0, 0]
         win_count = 0
         loss_count = 0
         for key in self.results.results:
@@ -208,5 +209,5 @@ class Wordle:
             else:
                 win_count += 1
                 guess_dist[last_guess] = guess_dist[last_guess] + 1
-                
+
         return Metrics(guess_dist, win_count, loss_count)

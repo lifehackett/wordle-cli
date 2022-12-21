@@ -1,6 +1,9 @@
+import os
+
 import click
 
 from wordle.wordle import Wordle, Score
+from wordle.wordle_results import WordleResultsYAMLMarshaller
 
 
 @click.group()
@@ -8,8 +11,12 @@ def cli():
     pass
 
 
+RESULTS_PATH = './src/wordle/data/results.yaml'
+
+
 def validate_guess(ctx, param, value):
-    wordle = Wordle()
+    wordle_results = WordleResultsYAMLMarshaller.load(RESULTS_PATH)
+    wordle = Wordle(wordle_results)
     try:
         wordle.validate_guess(value)
     except ValueError as e:
@@ -27,11 +34,13 @@ def guess(guess: str):
     GUESS   is the word you think is the word of the day.
             must be exactly 5 letters long
     """
-    wordle = Wordle()
+    wordle_results = WordleResultsYAMLMarshaller.load(RESULTS_PATH)
+    wordle = Wordle(wordle_results)
 
     scorecard = []
     try:
-        scorecard = wordle.guess(guess)
+        (results, scorecard) = wordle.guess(guess)
+        WordleResultsYAMLMarshaller.dump(RESULTS_PATH, results)
     except ValueError as e:
         raise click.UsageError(e)
 
@@ -47,15 +56,20 @@ def guess(guess: str):
     click.echo(f"Guess {wordle.todays_guess_count} of {Wordle.MAX_GUESSES}")
     click.echo("".join(output))
     if not wordle.has_more_guesses and not wordle.guessed_todays_answer:
-        click.echo(f"You ran out of guesses. Today's word is: {wordle.todays_answer}")
+        click.echo(
+            f"You ran out of guesses. Today's word is: {wordle.todays_answer}")
+
 
 @click.command()
 def metrics():
     """Print out your Wordle metrics
     """
-    
-    wordle = Wordle()
+
+    wordle_results = WordleResultsYAMLMarshaller.load(RESULTS_PATH)
+    wordle = Wordle(wordle_results)
+
     metrics = wordle.metrics()
+
     click.echo(f"Played: {metrics.games_played}")
     click.echo(f"Win Rate: " + "{:.0%}".format(metrics.win_rate))
     click.echo(f"Guess Distribution")

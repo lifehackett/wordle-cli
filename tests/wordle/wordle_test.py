@@ -4,11 +4,6 @@ from wordle.wordle import Score, Wordle, WordleResults
 
 
 class TestGuess:
-    @pytest.fixture(autouse=True)
-    def before_each(self):
-        wordle = WordleResults({})
-        wordle.save()
-
     def test_too_short_failure(self):
         wordle = Wordle()
 
@@ -35,7 +30,7 @@ class TestGuess:
         wordle = Wordle()
 
         # The word on 2022-12-19 is REBUT
-        scorecard = wordle.guess("RTXXX")
+        (_, scorecard) = wordle.guess("RTXXX")
 
         assert scorecard[0].score == Score.EXACT
         assert scorecard[1].score == Score.PARTIAL
@@ -48,7 +43,7 @@ class TestGuess:
         wordle = Wordle()
 
         # The word on 2022-12-19 is REBUT
-        scorecard = wordle.guess("RTTXX")
+        (_, scorecard) = wordle.guess("RTTXX")
 
         assert scorecard[0].score == Score.EXACT
         assert scorecard[1].score == Score.PARTIAL
